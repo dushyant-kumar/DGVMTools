@@ -332,3 +332,63 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
 }
 
 
+#' Read Avitabile et al. 2015 total biomass map
+#' 
+#' Total biomass across the tropics.  
+#' Original dataset is 1km, also provided here at 0.5 degrees or T63.
+#'  
+#' @param location A character string specifying the the location of the original data files
+#' @param resolution A character string specifying the resolution, currently supported
+#' are "HD" and "T63" and "original"
+#' 
+#' Should be moved to DGVMDatasets, not distributed with DGVMTools
+#' 
+#' @return A \code{DataObject} object.  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+
+getGFED4Annual <- function(location = "/data/forrest/BenchmarkingData/", start.year = 1996, end.year = 2013, average = TRUE, resolution = "HD") {
+  
+ 
+  # read the standard dataset
+  GFED4.dt <- readData("GFED4",
+                           location = location,
+                           resolution = resolution,
+                           start.year = start.year,
+                           end.year = end.year,
+                           temporally.average = TRUE,
+                           verbose = FALSE)
+  
+  
+  # set the name to something equivalent in the model
+  setnames(GFED4.dt, c("DATALAYER"), c("Annual"))
+  
+  # average
+  if(average) {
+    GFED4.dt <- GFED4.dt[, mean(Annual), by = c("Lon", "Lat")]
+    setnames(GFED4.dt, "V1", "Annual")
+  }
+  
+  # also set the key 
+  setKeyDGVM(GFED4.dt)
+  
+  # build the DataObject with the metadata
+  Avitabile.dataset <- new("DataObject",
+                           id = "GFED4",
+                           name = "GFED4",
+                           temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = start.year, end = end.year),
+                           data = GFED4.dt,
+                           quant = lookupQuantity("burntfraction_std", "Standard"),
+                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent(GFED4.dt)),
+                           correction.layer =  "")
+  
+  
+  
+  return(Avitabile.dataset)
+  
+  
+  
+  
+}
+
+

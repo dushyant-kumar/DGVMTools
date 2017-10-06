@@ -30,20 +30,48 @@ readData <- function(dataset.id,
                      verbose = FALSE) {
   
   Lon = NULL
-
-  if(dataset.id == "GFED4") {
-   stop("GFED4 not implemented yet")
+  
+  if(missing(start.year) && missing(end.year)) {
+    final.dt <- .openStandardNCFile(file.path(location, dataset.id, paste(dataset.id, resolution, "nc", sep = ".")), verbose)
+  }
+  else if(!missing(start.year) && !missing(end.year)) {
+    
+    all.years <- list()
+    for(year in start.year:end.year) {
+      temp.dt <- .openStandardNCFile(file.path(location, dataset.id, paste(dataset.id, year, resolution, "nc", sep = ".")), verbose)
+      print(temp.dt)
+      print(year)
+      temp.dt[ , Year:= year]
+      setcolorder(temp.dt, c("Lon", "Lat", "Year", "DATALAYER"))
+      all.years[[length(all.years)+1]] <- temp.dt
+      rm(temp.dt)
+    }
+    final.dt <- rbindlist(all.years)
+    rm(all.years)
+    
   }
   else {
-      file.string <- file.path(location, dataset.id, paste(dataset.id, resolution, "nc", sep = "."))
-  }
+    stop("If you provide one of start.year or end.year you must provide the other")
+  }  
+ 
+  # London centre
+  final.dt[, Lon := LondonCentre(Lon)]
+  
+  # return the data.table
+  return(final.dt)
+  
+  
+}
 
+
+.openStandardNCFile <- function(file.string, verbose = FALSE) {
+  
   message(paste0("Opening file ", file.string))                    
-                         
+  
   this.nc <- ncdf4::nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   this.lat <- ncdf4::ncvar_get(this.nc,"lat",verbose=verbose)
   this.lon <- ncdf4::ncvar_get(this.nc,"lon",verbose=verbose)
-
+  
   # Get the actual data and set the dimension names    
   this.slice <- ncdf4::ncvar_get(this.nc, start = c(1,1), count = c(-1,-1))
   dimnames(this.slice) <- list(this.lon, this.lat)
@@ -57,11 +85,7 @@ readData <- function(dataset.id,
   # remove NAs
   this.slice.dt <- stats::na.omit(this.slice.dt)
   
-  # London centre
-  this.slice.dt[,Lon := LondonCentre(Lon)]
-  
-  # return the data.table
+  # return
   return(this.slice.dt)
-           
-
+  
 }
