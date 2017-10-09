@@ -22,8 +22,6 @@ getAvitabile2015 <- function(location = "/data/forrest/Biomass/", resolution = "
   Avitabile.dt <- readData("Avitabile2015",
                          location = location,
                          resolution = resolution,
-                         start.year = NULL,
-                         end.year = NULL,
                          temporally.average = TRUE,
                          verbose = FALSE)
   
