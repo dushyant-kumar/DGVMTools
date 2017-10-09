@@ -31,7 +31,7 @@ readData <- function(dataset.id,
   
   Lon = NULL
   
-  if((missing(start.year) || is.null(start.year)) && (missing(end.year)  || is.null(end.year)) {
+  if((missing(start.year) || is.null(start.year)) && (missing(end.year)  || is.null(end.year))) {
     final.dt <- .openStandardNCFile(file.path(location, dataset.id, paste(dataset.id, resolution, "nc", sep = ".")), verbose)
   }
   else if(!missing(start.year) && !missing(end.year)) {
