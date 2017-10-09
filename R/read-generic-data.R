@@ -39,8 +39,6 @@ readData <- function(dataset.id,
     all.years <- list()
     for(year in start.year:end.year) {
       temp.dt <- .openStandardNCFile(file.path(location, dataset.id, paste(dataset.id, year, resolution, "nc", sep = ".")), verbose)
-      print(temp.dt)
-      print(year)
       temp.dt[ , Year:= year]
       setcolorder(temp.dt, c("Lon", "Lat", "Year", "DATALAYER"))
       all.years[[length(all.years)+1]] <- temp.dt
